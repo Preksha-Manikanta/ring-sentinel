@@ -1,0 +1,10 @@
+{
+  "description": "Streamline case management with an intuitive platform designed for legal professionals, enhancing collaboration and efficiency in handling cases.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

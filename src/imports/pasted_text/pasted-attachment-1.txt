@@ -1,0 +1,1246 @@
+# RING SENTINEL — FINAL SUBMISSION LOCK & FORENSIC QA MASTER PROMPT
+
+You are working on the latest uploaded **Ring Sentinel** project.
+
+This is the **FINAL QA / SUBMISSION pass**.
+
+The project has already been technically repaired and currently produces:
+
+```text
+BASELINE          RING SENTINEL
+
+Precision   5.1%          83.3%
+Recall      100.0%        100.0%
+
+TP          5             5
+FP          93            1
+FN          0             0
+
+Simulated ₹ Prevented
+            ₹247,888     ₹247,888
+
+False-positive Cost
+            ₹75,600      ₹0
+```
+
+Current test status:
+
+```text
+47 passed
+```
+
+The evaluation has also been run twice with identical results.
+
+## CRITICAL INSTRUCTION
+
+DO NOT attempt to improve the metrics further.
+
+DO NOT change the scoring model merely to obtain better numbers.
+
+DO NOT lower thresholds.
+
+DO NOT add new ML models.
+
+DO NOT add new features unless required to fix an actual defect.
+
+DO NOT redesign the frontend.
+
+DO NOT rebuild the application.
+
+The current detector is considered **frozen**.
+
+Your job is now to make the existing system:
+
+```text
+SUBMISSION READY
+DEMO READY
+REPRODUCIBLE
+HONEST
+ROBUST
+JUDGE DEFENSIBLE
+```
+
+---
+
+# 1. FREEZE THE CORE DETECTOR
+
+Treat the current deterministic scoring configuration as frozen.
+
+Do NOT modify:
+
+* scoring weights
+* risk thresholds
+* holdout selection
+* dataset seed
+* ring labels
+* evaluation definitions
+
+unless you discover an actual methodological bug.
+
+If you discover a genuine bug, fix it and rerun the entire evaluation.
+
+Do not optimize based on the resulting metric.
+
+The current target is:
+
+```text
+83.3% precision
+100% recall
+5 TP
+1 FP
+0 FN
+```
+
+These numbers must remain dynamically calculated.
+
+---
+
+# 2. PERFORM FINAL FORENSIC VALIDATION
+
+Before making changes, independently verify:
+
+```text
+TP = 5
+FP = 1
+FN = 0
+```
+
+Then verify:
+
+```text
+precision = TP / (TP + FP)
+recall = TP / (TP + FN)
+```
+
+Expected:
+
+```text
+precision = 83.3%
+recall = 100.0%
+```
+
+Do NOT hardcode these values anywhere.
+
+Search for hardcoded:
+
+```text
+83.3
+100.0
+247888
+75600
+5
+93
+1
+```
+
+Inspect every occurrence.
+
+Legitimate configuration constants are allowed.
+
+Hardcoded evaluation outputs are NOT allowed.
+
+---
+
+# 3. PROVE HOLDOUT INTEGRITY
+
+The evaluation uses a fixed holdout ring.
+
+Verify that the holdout:
+
+```text
+ring_03
+```
+
+is used ONLY for final evaluation.
+
+Search the entire repository for:
+
+```text
+ring_03
+ring_id
+ground_truth
+is_fraud
+label
+holdout
+```
+
+Ensure the deterministic scoring engine never consumes:
+
+```text
+ring_id
+ground_truth
+holdout membership
+fraud label
+evaluation result
+```
+
+The detector must only consume observable account/order/network properties.
+
+Valid examples:
+
+```text
+device reuse
+IP reuse
+payment fingerprint reuse
+UPI reuse
+phone reuse
+address reuse
+network density
+cross-attribute linkage
+transaction velocity
+behavioral patterns
+```
+
+Invalid:
+
+```text
+ring_id == ring_03
+is_abuse == true
+ground_truth == abuse
+```
+
+---
+
+# 4. VERIFY NO RING-SPECIFIC LOGIC EXISTS
+
+There must be no special-case logic like:
+
+```python
+if ring_id == "ring_03":
+    ...
+```
+
+or indirect equivalent behavior.
+
+No account IDs from the holdout may be referenced by the scorer.
+
+No seeded ring label may influence risk score.
+
+If any such logic exists, remove it.
+
+---
+
+# 5. VERIFY THE BASELINE IS FAIR
+
+Confirm that the baseline:
+
+* uses the same evaluation population
+* uses the same underlying transaction/account data
+* does not receive ground-truth labels
+* does not receive holdout information
+* is genuinely simpler than Ring Sentinel
+
+Document what the baseline does.
+
+The comparison should clearly communicate:
+
+```text
+Naive shared-attribute detection
+VS
+Network + behavioral detection
+```
+
+Do not artificially weaken the baseline.
+
+Do not artificially strengthen Ring Sentinel.
+
+---
+
+# 6. VERIFY CASE-LEVEL METRIC DEFINITIONS
+
+The project produces investigation cases/clusters.
+
+Clearly define the primary evaluation unit.
+
+Prefer:
+
+```text
+case/ring-level evaluation
+```
+
+if that matches the actual implementation.
+
+Do not mix account-level and case-level precision/recall.
+
+The README should explicitly state what:
+
+```text
+TP
+FP
+FN
+```
+
+mean.
+
+Example:
+
+> A true positive is a detected investigation case corresponding to a seeded abuse ring under the fixed evaluation matching rule.
+
+Use the exact definition implemented by the project.
+
+---
+
+# 7. VERIFY ₹247,888
+
+Confirm that:
+
+```text
+₹247,888
+```
+
+is calculated from the actual generated order values.
+
+Trace the calculation from:
+
+```text
+orders
+→ correctly detected abuse activity
+→ simulated pre-payout value
+```
+
+It must not be hardcoded.
+
+The UI must label this as:
+
+```text
+SIMULATED / PRE-PAYOUT VALUE
+```
+
+or equivalent.
+
+Never claim:
+
+```text
+real money saved
+actual fraud prevented
+production losses prevented
+```
+
+---
+
+# 8. VERIFY FALSE-POSITIVE COST
+
+Verify that:
+
+```text
+Ring Sentinel FP cost = ₹0
+Baseline FP cost = ₹75,600
+```
+
+are dynamically calculated.
+
+Trace:
+
+```text
+FP cases
+× investigation hours
+× investigator hourly cost
+```
+
+If the project uses:
+
+```text
+1.5 hours
+₹1,800/hour
+```
+
+keep those assumptions visible/documented.
+
+Do not hardcode final totals.
+
+---
+
+# 9. INVESTIGATE THE ONE FALSE POSITIVE
+
+Do NOT remove the remaining false positive simply to obtain 100% precision.
+
+Inspect it.
+
+Determine:
+
+```text
+Why was it flagged?
+Which signals caused the score?
+Is it a legitimate edge case?
+```
+
+If it is a legitimate edge case, keep it.
+
+This actually improves the credibility of the demo.
+
+The story becomes:
+
+> "The detector is highly selective but not magically perfect. One legitimate cluster still requires investigation."
+
+That is more realistic.
+
+---
+
+# 10. VERIFY DETERMINISM
+
+Run:
+
+```bash
+python data/generate_dataset.py
+pytest -q
+python eval/run_eval.py
+python eval/run_eval.py
+```
+
+Verify that both evaluation runs produce identical:
+
+```text
+TP
+FP
+FN
+precision
+recall
+₹ prevented
+FP cost
+```
+
+Also verify dataset generation with the fixed seed is reproducible.
+
+Do not change the seed.
+
+---
+
+# 11. VERIFY ALL 47+ TESTS
+
+Run:
+
+```bash
+pytest -q
+```
+
+All existing tests must pass.
+
+If adding tests, they should test behavior rather than arbitrary implementation details.
+
+Required coverage:
+
+```text
+deterministic scoring
+graph relationships
+shared attributes
+evaluation metrics
+holdout behavior
+human action validation
+Claude isolation
+audit logging
+API behavior
+```
+
+Do not delete tests simply to make the suite pass.
+
+---
+
+# 12. VERIFY HUMAN-IN-THE-LOOP SAFETY
+
+The only allowed human actions are:
+
+```text
+WATCH
+HOLD_PAYOUT
+ESCALATE_HUMAN
+```
+
+Reject:
+
+```text
+BLOCK
+BAN
+SUSPEND
+DELETE
+AUTO_BLOCK
+```
+
+The API must enforce this.
+
+The frontend must not be the only protection.
+
+Architecture must remain:
+
+```text
+Detection
+   ↓
+Risk
+   ↓
+Suggested workflow
+   ↓
+Human review
+   ↓
+Human action
+   ↓
+Audit log
+```
+
+There must be NO automatic punitive action.
+
+---
+
+# 13. VERIFY CLAUDE ISOLATION
+
+Claude is an explanation layer only.
+
+Verify that Claude cannot:
+
+```text
+change score
+change risk level
+override engine evidence
+approve an action
+execute an action
+```
+
+Claude may generate:
+
+```text
+summary
+identity explanation
+key findings
+uncertainty
+analyst narrative
+```
+
+The deterministic engine remains authoritative.
+
+If Claude is unavailable:
+
+```text
+risk scoring still works
+graph still works
+investigation still works
+metrics still work
+human action still works
+audit still works
+```
+
+Only narration should become unavailable.
+
+---
+
+# 14. VERIFY SCORE EXPLAINABILITY
+
+For every case, the final risk score should be traceable to actual signals.
+
+Example structure:
+
+```text
+Risk Score: 72.4
+
+Network linkage       +XX
+Device reuse          +XX
+IP reuse              +XX
+Payment reuse         +XX
+Behavior anomaly      +XX
+Velocity              +XX
+Cross-signal bonus    +XX
+```
+
+Use the actual implementation.
+
+Do not create explanations that are disconnected from the score.
+
+The judge should be able to ask:
+
+> "Why is this case high risk?"
+
+and the system should answer with evidence.
+
+---
+
+# 15. VERIFY GRAPH EXPLAINABILITY
+
+Graph edges must preserve actual shared attributes.
+
+Example:
+
+```text
+Account A
+   │
+   ├── shared device_id
+   ├── shared IP
+   └── shared payment fingerprint
+   │
+Account B
+```
+
+The frontend must receive actual graph relationships.
+
+No fake graph nodes.
+
+No fake connections.
+
+No hardcoded suspicious ring.
+
+---
+
+# 16. VERIFY `/metrics`
+
+The API endpoint:
+
+```text
+/metrics
+```
+
+must be the authoritative source for evaluation metrics.
+
+Frontend must not contain duplicated metric values.
+
+Verify:
+
+```text
+backend precision == frontend precision
+backend recall == frontend recall
+backend TP == frontend TP
+backend FP == frontend FP
+backend FN == frontend FN
+backend ₹ prevented == frontend ₹ prevented
+backend FP cost == frontend FP cost
+```
+
+---
+
+# 17. VERIFY EVENT STREAM HONESTY
+
+Inspect the WebSocket/event stream.
+
+If it replays synthetic historical transactions, label it clearly as:
+
+```text
+LIVE REPLAY
+```
+
+or:
+
+```text
+DATASET REPLAY
+```
+
+or:
+
+```text
+SIMULATED STREAM
+```
+
+Do NOT claim that synthetic replay is real production payment traffic.
+
+The UI may still animate transactions and feel live.
+
+The terminology must remain truthful.
+
+---
+
+# 18. REMOVE RUNTIME MOCK DATA
+
+Search frontend/backend for:
+
+```text
+mock
+dummy
+fake
+sample
+placeholder
+hardcoded
+```
+
+Inspect each result.
+
+Remove fake runtime data.
+
+Static UI examples/documentation are acceptable.
+
+Runtime values must come from:
+
+```text
+dataset
+engine
+API
+WebSocket
+evaluation
+```
+
+No fake fallback should silently appear when the backend fails.
+
+---
+
+# 19. VERIFY OFFLINE BEHAVIOR
+
+When backend is unavailable, show:
+
+```text
+Backend offline
+```
+
+or an equivalent honest state.
+
+Do NOT replace the dashboard with fake transactions.
+
+When Claude is unavailable, show:
+
+```text
+Narration unavailable
+```
+
+while retaining deterministic evidence.
+
+When WebSocket disconnects, show:
+
+```text
+Replay disconnected
+```
+
+or equivalent.
+
+---
+
+# 20. VERIFY UI POLISH WITHOUT REDESIGN
+
+Do NOT redesign the UI.
+
+Only fix actual defects such as:
+
+* broken layout
+* clipped text
+* incorrect metric formatting
+* inconsistent terminology
+* broken buttons
+* missing loading states
+* broken error states
+* confusing labels
+
+Ensure the key judge-facing areas are visually obvious:
+
+```text
+Risk
+Evidence
+Network
+Evaluation
+Human Action
+Audit
+```
+
+---
+
+# 21. MAKE THE KEY DIFFERENTIATION OBVIOUS
+
+The interface should make this distinction immediately understandable:
+
+### Naive detector
+
+```text
+"These accounts share an attribute."
+```
+
+### Ring Sentinel
+
+```text
+"These accounts form a coordinated network,
+multiple independent attributes connect them,
+their behavior is suspicious,
+and here is the evidence-backed risk score."
+```
+
+Do not add unnecessary marketing copy.
+
+Use the existing UI.
+
+---
+
+# 22. FINAL DASHBOARD NUMBERS
+
+The dashboard/evaluation panel should clearly show:
+
+```text
+83.3%
+Precision
+
+100%
+Recall
+
+5
+True Positive Cases
+
+1
+False Positive Case
+
+₹247,888
+Simulated / Pre-Payout Value
+
+₹0
+False-Positive Investigation Cost
+```
+
+These values must be backend-derived.
+
+Do NOT display them as static text.
+
+---
+
+# 23. MAKE THE BASELINE COMPARISON VISUAL
+
+If the existing EvaluationPanel supports it, present:
+
+```text
+                 BASELINE     RING SENTINEL
+
+Precision           5.1%          83.3%
+Recall            100.0%         100.0%
+False Positives       93             1
+```
+
+This is the strongest judge-facing comparison.
+
+Do not add unnecessary charts.
+
+A simple comparison is sufficient.
+
+---
+
+# 24. README FINAL STORY
+
+Update README to clearly communicate:
+
+## Problem
+
+Payment abuse is frequently coordinated across multiple accounts and identities.
+
+## Existing weakness
+
+Simple duplicate/shared-attribute checks can generate huge numbers of false-positive investigations.
+
+## Ring Sentinel
+
+Ring Sentinel constructs a relationship graph and combines network and behavioral evidence to prioritize coordinated abuse.
+
+## Deterministic core
+
+Risk scoring is deterministic and explainable.
+
+## Claude
+
+Claude provides analyst-friendly narration only.
+
+## Human governance
+
+Consequential actions require human review.
+
+## Auditability
+
+Human actions are recorded in an auditable log.
+
+## Evaluation
+
+State:
+
+```text
+500 accounts
+2000 orders
+6 seeded abuse rings
+fixed holdout
+```
+
+Then explain:
+
+```text
+development rings
+→ freeze scoring
+→ untouched holdout
+→ evaluation
+```
+
+## Results
+
+If still verified, report:
+
+```text
+83.3% precision
+100% recall
+1 false-positive case
+5 true-positive cases
+```
+
+Explicitly identify the dataset as synthetic.
+
+---
+
+# 25. REMOVE UNSUPPORTED CLAIMS
+
+Search README, UI copy, comments, and demo documentation for claims like:
+
+```text
+real-time fraud detection
+production-ready
+100% accurate
+zero false positives
+real money saved
+guaranteed detection
+```
+
+Replace them with technically defensible wording.
+
+Use:
+
+```text
+fixed synthetic evaluation
+simulated/pre-payout value
+dataset replay
+deterministic risk scoring
+human-in-the-loop investigation
+```
+
+where appropriate.
+
+---
+
+# 26. CREATE A JUDGE-PROOF DEMO FLOW
+
+Do not build a separate demo application.
+
+Ensure the existing app supports this flow:
+
+### STEP 1 — Stream
+
+Show transaction events entering the system.
+
+Clearly label the stream as replay/simulation if appropriate.
+
+### STEP 2 — Detection
+
+A suspicious network appears.
+
+### STEP 3 — Graph
+
+Show accounts connected by actual shared attributes.
+
+### STEP 4 — Risk
+
+Show deterministic score and severity.
+
+### STEP 5 — Evidence
+
+Show exactly why the case is suspicious.
+
+### STEP 6 — Claude
+
+Generate analyst-friendly narration.
+
+### STEP 7 — Human decision
+
+Select:
+
+```text
+WATCH
+HOLD_PAYOUT
+ESCALATE_HUMAN
+```
+
+### STEP 8 — Audit
+
+Show the resulting audit record.
+
+### STEP 9 — Evaluation
+
+Show:
+
+```text
+5 TP
+1 FP
+0 FN
+83.3% precision
+100% recall
+```
+
+and compare against the baseline.
+
+This should be achievable through the existing application.
+
+---
+
+# 27. DO NOT ADD LAST-MINUTE FEATURES
+
+Do NOT add:
+
+* extra AI agents
+* new ML models
+* unnecessary dashboards
+* authentication systems
+* payment gateways
+* external fraud APIs
+* blockchain
+* complex infrastructure
+* unnecessary databases
+* unnecessary cloud services
+* extra sensors
+* unrelated integrations
+
+The project is already feature-complete.
+
+Reliability > feature count.
+
+---
+
+# 28. FINAL BUILD CHECK
+
+Run the complete project from a clean state.
+
+Verify:
+
+```text
+dataset generation
+        ↓
+backend startup
+        ↓
+frontend startup
+        ↓
+WebSocket
+        ↓
+graph
+        ↓
+investigation
+        ↓
+Claude narration
+        ↓
+human action
+        ↓
+audit
+        ↓
+metrics
+```
+
+No manual hidden steps should be necessary except documented environment/API-key setup.
+
+---
+
+# 29. FINAL ENVIRONMENT WARNING
+
+If you encounter unrelated environment messages such as:
+
+```text
+Spreadsheet runtime warmup failed
+hydrateCrdtFromProto
+```
+
+DO NOT rewrite Ring Sentinel because of them.
+
+First determine whether:
+
+```text
+exit code != 0
+tests fail
+application fails
+```
+
+If the application and tests succeed, treat unrelated environment initialization warnings as environmental noise.
+
+Do not introduce risky code changes merely to hide an external runtime warning.
+
+---
+
+# 30. FINAL REGRESSION COMMANDS
+
+Run exactly:
+
+```bash
+python data/generate_dataset.py
+pytest -q
+python eval/run_eval.py
+python eval/run_eval.py
+```
+
+Record both evaluation outputs.
+
+They must match.
+
+---
+
+# 31. FINAL ACCEPTANCE CRITERIA
+
+Do not declare the project complete unless:
+
+### Evaluation
+
+* [ ] 83.3% precision is calculated dynamically
+* [ ] 100% recall is calculated dynamically
+* [ ] TP = 5 dynamically
+* [ ] FP = 1 dynamically
+* [ ] FN = 0 dynamically
+* [ ] ₹247,888 dynamically calculated
+* [ ] FP cost dynamically calculated
+* [ ] baseline is fair
+* [ ] holdout is untouched
+* [ ] no label leakage
+* [ ] no ring-specific logic
+* [ ] evaluation is reproducible
+
+### Engineering
+
+* [ ] 47+ tests pass
+* [ ] deterministic scorer
+* [ ] explainable score
+* [ ] graph relationships correct
+* [ ] `/metrics` works
+* [ ] WebSocket works
+* [ ] frontend consumes backend data
+* [ ] no runtime mock data
+
+### Governance
+
+* [ ] Claude cannot override score
+* [ ] Claude cannot execute actions
+* [ ] human action required
+* [ ] only WATCH / HOLD_PAYOUT / ESCALATE_HUMAN
+* [ ] audit logging works
+
+### Honesty
+
+* [ ] synthetic dataset clearly identified
+* [ ] simulated ₹ value clearly identified
+* [ ] replay clearly identified
+* [ ] no unsupported production claims
+
+### Demo
+
+* [ ] transaction → graph → risk → evidence → explanation → human action → audit → evaluation works
+
+---
+
+# 32. FINAL REPORT
+
+When complete, return:
+
+## VERDICT
+
+One of:
+
+```text
+SUBMISSION READY
+SUBMISSION READY WITH MINOR FIXES
+NOT READY
+```
+
+## VERIFIED METRICS
+
+```text
+                    BASELINE    RING SENTINEL
+
+Precision
+Recall
+TP
+FP
+FN
+₹ Prevented
+FP Cost
+```
+
+## REPRODUCIBILITY
+
+```text
+Evaluation Run 1:
+Evaluation Run 2:
+Identical: YES/NO
+```
+
+## TESTS
+
+```text
+pytest:
+X passed
+```
+
+## HOLDOUT AUDIT
+
+```text
+Holdout:
+Used for tuning: YES/NO
+Label leakage: YES/NO
+Ring-specific logic: YES/NO
+Threshold holdout-independent: YES/NO
+```
+
+## DATA AUDIT
+
+```text
+Accounts:
+Orders:
+Seeded rings:
+Dataset seed:
+```
+
+## DEMO AUDIT
+
+```text
+Stream:
+Graph:
+Risk:
+Evidence:
+Claude:
+Human action:
+Audit:
+Metrics:
+```
+
+## FILES CHANGED
+
+List only files actually changed.
+
+## REMAINING ISSUES
+
+List only genuine remaining issues.
+
+---
+
+# FINAL COMMANDMENT
+
+**DO NOT TOUCH WHAT IS ALREADY WORKING.**
+
+The detector has already achieved:
+
+```text
+83.3% precision
+100% recall
+5 TP
+1 FP
+0 FN
+47 passing tests
+reproducible evaluation
+```
+
+Your responsibility is to make those results **provably legitimate and the demo extremely clear**.
+
+The final system should survive a skeptical judge asking:
+
+> "Did you tune this on the test set?"
+
+Answer:
+
+> "No. The scoring configuration was frozen using development rings and then evaluated on a fixed untouched holdout."
+
+Judge:
+
+> "Are those metrics hardcoded?"
+
+Answer:
+
+> "No. They are calculated directly from the generated evaluation dataset and deterministic engine output."
+
+Judge:
+
+> "Is Claude making the fraud decision?"
+
+Answer:
+
+> "No. Claude only narrates the deterministic evidence. The risk engine remains authoritative and consequential actions require a human."
+
+Judge:
+
+> "Is this real payment data?"
+
+Answer:
+
+> "No. The evaluation uses a reproducible synthetic dataset; the demo stream is explicitly a dataset replay. The architecture is designed around the same entity-network and behavioral signals that would be available in a real payment environment."
+
+That is the standard this final build must meet.
+
+**Freeze the detector. Validate the evidence. Fix only real defects. Make the demo clear. Do not chase prettier numbers.**

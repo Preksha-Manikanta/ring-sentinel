@@ -1,0 +1,1457 @@
+# RING SENTINEL — FINAL FORCE-FIX
+
+## REPAIR THE CURRENT PROJECT ONLY — DO NOT REBUILD
+
+You are working on the **CURRENT uploaded Ring Sentinel ZIP**.
+
+This project has already been substantially implemented.
+
+Your task is NOT to rebuild Ring Sentinel.
+
+Your task is to perform a **final audit + surgical repair pass** against the requirements below.
+
+---
+
+# 🚨 ABSOLUTE RULE
+
+## DO NOT REBUILD THE PROJECT.
+
+Do NOT:
+
+* create a new frontend
+* replace React/Vite
+* redesign the dashboard
+* replace the existing graph
+* replace the existing investigation UI
+* rewrite working backend modules
+* introduce a new architecture
+* introduce a new framework
+* create duplicate implementations
+* remove working functionality
+* add unnecessary features
+
+### Instead:
+
+```text
+INSPECT CURRENT PROJECT
+        ↓
+IDENTIFY REMAINING VIOLATIONS
+        ↓
+FIX ONLY THOSE VIOLATIONS
+        ↓
+RUN TESTS
+        ↓
+RUN END-TO-END CHECK
+        ↓
+STOP
+```
+
+Preserve everything that already works.
+
+---
+
+# 1. CURRENT PROJECT STATUS
+
+The current project already contains the major architecture:
+
+```text
+data/
+engine/
+llm/
+audit/
+api/
+eval/
+tests/
+React frontend
+```
+
+The previous implementation pass has already addressed most of the original specification.
+
+Therefore, **DO NOT recreate those systems.**
+
+Only fix the remaining inconsistencies and verify that the systems are actually connected.
+
+---
+
+# 2. FINAL ARCHITECTURE THAT MUST REMAIN
+
+The final architecture must be:
+
+```text
+Synthetic Accounts + Orders
+          │
+          ▼
+    NetworkX Graph
+          │
+          ▼
+Deterministic Risk Scorer
+          │
+          ├──────────────► Holdout Evaluation
+          │
+          ▼
+    Claude Narrator
+    EXPLANATION ONLY
+          │
+          ▼
+      FastAPI
+          │
+          ▼
+   EXISTING REACT UI
+          │
+          ▼
+    HUMAN ANALYST
+          │
+       ┌──┼──┐
+       ▼  ▼  ▼
+     WATCH
+     HOLD_PAYOUT
+     ESCALATE_HUMAN
+          │
+          ▼
+   Hash-Chained Audit Log
+```
+
+These boundaries are non-negotiable:
+
+```text
+LLM ≠ detector
+LLM ≠ numerical risk scorer
+LLM ≠ autonomous decision maker
+```
+
+and:
+
+```text
+NO AUTO-BLOCK
+```
+
+---
+
+# 3. FIRST — AUDIT BEFORE EDITING
+
+Inspect the entire current repository.
+
+Specifically inspect:
+
+```text
+data/
+engine/
+llm/
+audit/
+api/
+eval/
+tests/
+src/
+```
+
+and identify:
+
+```text
+WORKING
+BROKEN
+MOCKED
+MISCONNECTED
+CONTRADICTORY
+MISSING
+```
+
+Do not modify anything merely because it could be written differently.
+
+Only change something if it violates the requirements below or prevents end-to-end functionality.
+
+---
+
+# 4. FIX #1 — CLAUDE MUST NOT DECIDE THE ACTION
+
+## THIS IS THE HIGHEST PRIORITY FIX.
+
+The current implementation contains a Claude dossier field similar to:
+
+```python
+recommended_action
+```
+
+This creates an architectural contradiction.
+
+The specification explicitly says:
+
+> The LLM never decides the action.
+
+Therefore:
+
+### REMOVE ACTION DECISION FROM CLAUDE.
+
+Claude may return only explanation-related information, such as:
+
+```text
+summary
+identity_resolution
+key_findings
+uncertainty
+evidence_explanation
+```
+
+Claude must NOT return:
+
+```text
+recommended_action
+```
+
+as part of its decision-making responsibility.
+
+---
+
+# 5. DETERMINISTIC ACTION POLICY
+
+The action recommendation, if the UI needs one, must come from deterministic backend policy.
+
+For example:
+
+```text
+LOW / MEDIUM
+    → WATCH
+
+HIGH
+    → HOLD_PAYOUT
+
+CRITICAL
+    → ESCALATE_HUMAN
+```
+
+Use the project's existing risk policy where possible.
+
+Do NOT invent unnecessary policy complexity.
+
+The important rule is:
+
+```text
+risk score
+    ↓
+deterministic policy
+    ↓
+allowed action
+```
+
+NOT:
+
+```text
+risk score
+    ↓
+Claude
+    ↓
+action
+```
+
+---
+
+# 6. FINAL ACTION ENUM
+
+The only permitted actions are:
+
+```text
+WATCH
+HOLD_PAYOUT
+ESCALATE_HUMAN
+```
+
+The Pydantic schema must enforce this.
+
+The application must reject:
+
+```text
+BLOCK
+AUTO_BLOCK
+BAN
+SUSPEND
+DELETE
+```
+
+Do not merely remove these from the prompt.
+
+They must be impossible through the validated action schema.
+
+---
+
+# 7. HUMAN GATE
+
+The system may:
+
+```text
+detect
+score
+surface
+explain
+recommend
+```
+
+But it must NOT automatically punish an account.
+
+The actual action occurs only after a human explicitly selects:
+
+```text
+WATCH
+HOLD PAYOUT
+ESCALATE HUMAN
+```
+
+The human action must be recorded in the audit log.
+
+---
+
+# 8. FIX #2 — REAL EVALUATION METRICS MUST REACH THE DASHBOARD
+
+The current evaluation implementation calculates:
+
+```text
+precision
+recall
+₹ prevented
+false-positive cost
+```
+
+on the holdout set.
+
+Keep that implementation.
+
+### DO NOT REWRITE IT.
+
+Instead, make sure the actual computed results are exposed through the backend.
+
+The existing:
+
+```text
+GET /metrics
+```
+
+currently contains operational/dashboard metrics such as:
+
+```text
+eventsReceived
+transactionsAnalyzed
+highRiskEvents
+criticalAlerts
+activeInvestigations
+detectionLatencyMs
+```
+
+Those may remain.
+
+BUT the endpoint must ALSO expose the actual evaluation metrics.
+
+Add a clearly named nested structure such as:
+
+```json
+{
+  "evaluation": {
+    "dataset_accounts": 500,
+    "dataset_orders": 2000,
+    "seeded_rings": 7,
+    "holdout_fraction": 0.20,
+    "baseline": {
+      "precision": 0.XX,
+      "recall": 0.XX,
+      "rupees_prevented": XXXX,
+      "false_positive_cost": XXXX
+    },
+    "ring_sentinel": {
+      "precision": 0.XX,
+      "recall": 0.XX,
+      "rupees_prevented": XXXX,
+      "false_positive_cost": XXXX
+    }
+  }
+}
+```
+
+Use the project's actual computed values.
+
+### NEVER hard-code impressive numbers.
+
+The values must originate from the evaluation implementation.
+
+---
+
+# 9. FRONTEND METRICS
+
+Connect the existing metrics UI to the actual evaluation results.
+
+Do NOT redesign the dashboard.
+
+Reuse the existing metric cards/charts if possible.
+
+The dashboard must make the following comparison visible:
+
+```text
+                 BASELINE       RING SENTINEL
+
+Precision          XX.X%            XX.X%
+Recall             XX.X%            XX.X%
+₹ Prevented        ₹XX,XXX          ₹XX,XXX
+FP Cost            ₹X,XXX           ₹X,XXX
+```
+
+The exact visual format can follow the existing UI.
+
+The important thing is that the values are real.
+
+---
+
+# 10. HOLDOUT CLAIM MUST BE HONEST
+
+The project must clearly state:
+
+> Metrics are calculated on an untouched 20% holdout set and were not used for threshold/weight tuning.
+
+Verify that this is actually true.
+
+Do NOT tune thresholds using holdout labels.
+
+Do NOT modify the holdout after evaluation.
+
+Do NOT manufacture metrics.
+
+---
+
+# 11. FIX #3 — PRESERVE ALL GRAPH EVIDENCE
+
+The backend graph already identifies shared attributes such as:
+
+```text
+device_id
+ip_address
+address
+card_fingerprint
+upi_id
+phone_number
+```
+
+Do NOT collapse this evidence unnecessarily in the API response.
+
+If two accounts share:
+
+```text
+device
+IP
+UPI
+```
+
+the frontend should receive all three pieces of evidence.
+
+The graph/API response should preserve something equivalent to:
+
+```json
+{
+  "source": "acct_001",
+  "target": "acct_007",
+  "shared_attributes": [
+    "device_id",
+    "ip_address",
+    "upi_id"
+  ]
+}
+```
+
+The existing graph visualization should use this information where practical.
+
+### Do not redesign the graph.
+
+Just ensure the existing graph isn't throwing away useful backend evidence.
+
+---
+
+# 12. GRAPH MUST BE REAL
+
+The frontend graph must use actual backend graph data.
+
+It must NOT use:
+
+```text
+hardcoded nodes
+fake edges
+decorative relationships
+static demo graph
+```
+
+The graph should represent actual accounts from:
+
+```text
+data/accounts.csv
+data/orders.csv
+```
+
+processed through:
+
+```text
+engine/graph_builder.py
+```
+
+---
+
+# 13. FIX #4 — BE HONEST ABOUT "REAL-TIME"
+
+The existing frontend may have WebSocket/live-stream behavior.
+
+Keep it if it works.
+
+However, the current dataset is historical synthetic data.
+
+If the WebSocket is replaying orders from the generated dataset, do NOT label this as genuine external production real-time data.
+
+Use an honest label such as:
+
+```text
+LIVE REPLAY
+```
+
+or:
+
+```text
+DATASET REPLAY
+```
+
+when appropriate.
+
+If there is an actual connected backend stream, use:
+
+```text
+LIVE
+```
+
+only when the connection is genuinely active.
+
+---
+
+# 14. FIX #5 — HONEST LIVE/OFFLINE STATUS
+
+Do not determine connection state merely because a URL exists.
+
+For example, this logic is insufficient:
+
+```text
+Boolean(apiBaseUrl)
+```
+
+because a default URL can exist while the backend is completely offline.
+
+The UI must determine LIVE/OFFLINE based on actual connectivity.
+
+Therefore:
+
+```text
+Backend reachable
+    → LIVE / CONNECTED
+
+Backend unreachable
+    → OFFLINE / DISCONNECTED
+```
+
+Do not falsely display LIVE.
+
+---
+
+# 15. FIX #6 — LEGITIMATE SHARED INFRASTRUCTURE MUST NOT AUTOMATICALLY BECOME FRAUD
+
+The dataset contains legitimate:
+
+```text
+family
+office
+single-attribute overlap
+```
+
+cases.
+
+Verify the scorer does not turn these into high-risk cases merely because:
+
+```text
+same IP
+same address
+same device
+```
+
+exists.
+
+The risk system should consider the combination of:
+
+```text
+shared infrastructure
++
+behavior
++
+velocity
++
+promo/refund behavior
++
+payment concentration
+```
+
+rather than:
+
+```text
+one shared identifier = fraud
+```
+
+---
+
+# 16. PARTICULARLY CHECK CLUSTER SIZE
+
+If cluster size contributes to the risk score, verify that a legitimate office/family component cannot become highly suspicious simply because it contains many accounts.
+
+Do not remove cluster-size logic unless necessary.
+
+Instead, make sure it is appropriately weighted and contextualized.
+
+The goal:
+
+```text
+large legitimate office
+≠
+fraud ring
+```
+
+while:
+
+```text
+large coordinated abuse ring
+=
+high risk
+```
+
+---
+
+# 17. FIX #7 — VERIFY HOLDOUT SPLIT
+
+The dataset generator must produce:
+
+```text
+6–8 total seeded rings
+```
+
+and an explicit holdout.
+
+Verify:
+
+```text
+holdout_fraction = 20%
+```
+
+or the equivalent deterministic split.
+
+Ensure at least one ring is available for holdout evaluation.
+
+Print/document the exact split when running evaluation.
+
+Do not change the underlying dataset merely to make the metrics look better.
+
+---
+
+# 18. FIX #8 — ₹ PREVENTED MUST BE HONEST
+
+Keep the existing calculation.
+
+Ensure it is clearly described as:
+
+> simulated/pre-payout prevented value on the evaluation dataset.
+
+Do not imply this is actual Razorpay money prevented.
+
+Do not claim production savings.
+
+---
+
+# 19. FIX #9 — FALSE-POSITIVE COST MUST BE REAL
+
+Keep the existing calculation.
+
+It should derive from:
+
+```text
+false-positive legitimate cases
+× analyst review time
+× loaded analyst cost
+```
+
+The assumption must be documented.
+
+Do not fabricate the number.
+
+---
+
+# 20. FIX #10 — CLAUDE FAILURE MUST NEVER BREAK DETECTION
+
+This is mandatory.
+
+Simulate:
+
+```text
+missing API key
+timeout
+network failure
+malformed Claude response
+```
+
+The system must still return:
+
+```text
+cluster
+graph
+accounts
+risk score
+deterministic evidence
+behavioral evidence
+```
+
+The UI should show:
+
+```text
+AI narration unavailable.
+Showing deterministic evidence and risk score.
+```
+
+Do NOT generate fake Claude output.
+
+---
+
+# 21. CLAUDE BOUNDARY CHECK
+
+Search the entire codebase.
+
+The only file allowed to directly invoke Claude should be:
+
+```text
+llm/narrator.py
+```
+
+There must be no Claude invocation in:
+
+```text
+engine/
+data/
+eval/
+audit/
+```
+
+The engine must work without:
+
+```text
+ANTHROPIC_API_KEY
+```
+
+---
+
+# 22. ACTION BOUNDARY CHECK
+
+Search the entire repository for:
+
+```text
+BLOCK
+AUTO_BLOCK
+BAN
+SUSPEND
+DELETE
+```
+
+Remove any executable path that automatically performs such an action.
+
+Documentation may mention these words when explaining that they are forbidden.
+
+The only executable analyst actions are:
+
+```text
+WATCH
+HOLD_PAYOUT
+ESCALATE_HUMAN
+```
+
+---
+
+# 23. API SEMANTICS
+
+Keep the existing:
+
+```text
+POST /approve
+```
+
+endpoint if the frontend already uses it.
+
+Do NOT rebuild it unnecessarily.
+
+But make sure `/approve` means:
+
+> record the human analyst's selected action
+
+and NOT:
+
+> approve Claude's decision.
+
+The request must contain the selected action.
+
+Validate it using Pydantic.
+
+---
+
+# 24. AUDIT LOG
+
+Preserve the existing audit implementation.
+
+Verify:
+
+```text
+logs/audit.jsonl
+```
+
+is append-only.
+
+Each entry should include:
+
+```text
+timestamp
+case_id
+event_type
+action
+previous_hash
+current_hash
+```
+
+and relevant evidence/context.
+
+Verify:
+
+```text
+hash(N)
+```
+
+depends on:
+
+```text
+hash(N-1)
+```
+
+so tampering with an earlier record invalidates the chain.
+
+---
+
+# 25. HUMAN ACTION MUST APPEAR IN AUDIT
+
+When the analyst clicks:
+
+```text
+WATCH
+HOLD PAYOUT
+ESCALATE HUMAN
+```
+
+the backend must write an actual audit entry.
+
+The UI must display confirmation based on the successful backend response.
+
+Do NOT show a fake success message before the backend records the action.
+
+---
+
+# 26. EXISTING FRONTEND — MINIMAL CHANGES ONLY
+
+Do not rebuild any existing component.
+
+Modify only:
+
+```text
+API mappings
+TypeScript types
+data adapters
+metric rendering
+action handling
+connection state
+graph evidence mapping
+failure states
+```
+
+when required.
+
+Keep:
+
+```text
+layout
+colors
+cards
+graph appearance
+navigation
+investigation UX
+```
+
+unless a change is required for correctness.
+
+---
+
+# 27. NO MOCK RUNTIME DATA
+
+Search for:
+
+```text
+mock
+dummy
+fake
+placeholder
+sample
+static
+hardcoded
+demoData
+mockData
+```
+
+For each occurrence:
+
+### If it is documentation/test-only:
+
+Leave it.
+
+### If it supplies runtime dashboard data:
+
+Remove/replace it with the actual backend pipeline.
+
+Do NOT blindly delete legitimate test fixtures.
+
+---
+
+# 28. DATA PIPELINE MUST WORK END-TO-END
+
+Verify:
+
+```text
+accounts.csv
+orders.csv
+      ↓
+graph_builder.py
+      ↓
+NetworkX graph
+      ↓
+risk_scorer.py
+      ↓
+case
+      ↓
+FastAPI
+      ↓
+React dashboard
+```
+
+Do not merely verify that individual files exist.
+
+Trace an actual case.
+
+---
+
+# 29. EVALUATION PIPELINE MUST WORK END-TO-END
+
+Verify:
+
+```text
+holdout_labels.json
+      ↓
+eval/run_eval.py
+      ↓
+baseline
+      ↓
+Ring Sentinel
+      ↓
+precision
+recall
+₹ prevented
+FP cost
+      ↓
+API /metrics
+      ↓
+dashboard
+```
+
+The same computed values must be visible in the UI.
+
+---
+
+# 30. TESTS
+
+Run all existing tests.
+
+Fix failing tests rather than deleting them.
+
+Required tests:
+
+```text
+tests/test_graph_builder.py
+tests/test_risk_scorer.py
+tests/test_narrator.py
+tests/test_failure_handling.py
+```
+
+The tests must verify actual behavior.
+
+Do NOT weaken tests merely to make them pass.
+
+---
+
+# 31. ADD TEST FOR THE MOST IMPORTANT CLAUDE RULE
+
+Add/modify the narrator test so that it proves:
+
+```text
+Claude output
+    ≠
+action decision
+```
+
+and:
+
+```text
+invalid action
+→
+Pydantic validation failure
+```
+
+The test must explicitly prove:
+
+```text
+BLOCK
+```
+
+cannot be accepted.
+
+---
+
+# 32. ADD TEST FOR HUMAN ACTION
+
+Verify:
+
+```text
+POST /approve
+```
+
+with:
+
+```text
+WATCH
+HOLD_PAYOUT
+ESCALATE_HUMAN
+```
+
+works.
+
+Verify invalid:
+
+```text
+BLOCK
+```
+
+fails.
+
+Verify successful action produces an audit record.
+
+---
+
+# 33. README — ONLY UPDATE WHAT IS NEEDED
+
+Do not rewrite the README unnecessarily.
+
+Ensure it accurately states:
+
+```text
+Ring Sentinel detects coordinated post-onboarding customer abuse networks.
+
+Graph construction is deterministic.
+
+Risk scoring is deterministic.
+
+Claude is used only for fuzzy identity interpretation and case-file narration.
+
+Claude does not determine the risk score or final action.
+
+Human approval is required.
+
+No automatic blocking exists.
+
+Metrics are evaluated on an untouched 20% holdout set.
+
+₹ prevented is simulated/pre-payout value on the evaluation dataset.
+```
+
+---
+
+# 34. DEMO SCRIPT — FINAL REQUIRED FLOW
+
+Ensure:
+
+```text
+docs/demo_script.md
+```
+
+follows:
+
+### 1. Normal case
+
+Suspicious ring:
+
+```text
+graph
+→ score
+→ evidence
+→ dossier
+→ human HOLD PAYOUT
+```
+
+### 2. Edge case
+
+Legitimate family/office:
+
+```text
+shared infrastructure
+but normal behavior
+→ not treated as fraud
+```
+
+### 3. Failure
+
+Disable Claude:
+
+```text
+AI narration unavailable
+```
+
+while:
+
+```text
+graph
+score
+evidence
+```
+
+remain.
+
+### 4. Metrics
+
+Show:
+
+```text
+Baseline vs Ring Sentinel
+```
+
+from the actual holdout.
+
+### 5. Audit
+
+Show:
+
+```text
+human action
+timestamp
+previous hash
+current hash
+```
+
+### 6. Close
+
+Use:
+
+> Ring Sentinel does not replace the risk analyst. It compresses a network-level investigation into an auditable case file while keeping the final action human-controlled.
+
+---
+
+# 35. PITCH DECK — FINAL REQUIRED ANSWERS
+
+Ensure `docs/pitch_deck.md` contains:
+
+### Isn't this just Bumblebee?
+
+> Bumblebee vets merchants at onboarding. This watches an already-onboarded merchant's own customer base for coordinated abuse. Different data, different lifecycle stage.
+
+### Why does this need AI — isn't it a graph query?
+
+> The graph is deterministic on purpose. AI's job is fuzzy identity resolution and writing an audit-grade explanation a non-technical analyst can act on in seconds.
+
+### What's your false-positive cost?
+
+Use the ACTUAL calculated value from the holdout evaluation.
+
+Never claim an unsupported accuracy number.
+
+### What happens when the AI is wrong?
+
+> A human reviews a case that didn't need review. Worst case is wasted analyst time — never wrongful account action, because nothing is auto-blocked.
+
+### Could this be dangerous in production?
+
+> Only if the action enum ever included auto-block. Yours doesn't, by design.
+
+---
+
+# 36. DO NOT IMPROVE THE ARCHITECTURE
+
+Do NOT introduce:
+
+```text
+microservices
+agents
+vector databases
+Kubernetes
+authentication
+real payment integration
+additional LLM calls
+```
+
+unless absolutely required to repair an existing broken feature.
+
+This is a 12-hour hackathon project.
+
+Keep the architecture simple.
+
+---
+
+# 37. FINAL SEARCH CHECK
+
+Before finishing, search the codebase for:
+
+```text
+anthropic
+Claude
+recommended_action
+BLOCK
+AUTO_BLOCK
+mock
+dummy
+fake
+hardcoded
+```
+
+Verify every occurrence is legitimate.
+
+Especially:
+
+### Claude
+
+Only actual invocation:
+
+```text
+llm/narrator.py
+```
+
+### Action
+
+Only:
+
+```text
+WATCH
+HOLD_PAYOUT
+ESCALATE_HUMAN
+```
+
+### Mock data
+
+No runtime fake dashboard data.
+
+---
+
+# 38. FINAL END-TO-END VERIFICATION
+
+Do not declare completion until you have actually verified:
+
+## Backend
+
+```bash
+pytest
+```
+
+passes.
+
+Then:
+
+```bash
+python eval/run_eval.py
+```
+
+works.
+
+Then:
+
+```bash
+uvicorn api.main:app --reload
+```
+
+starts successfully.
+
+---
+
+# 39. FINAL BROWSER TEST
+
+With the existing frontend running:
+
+### TEST A
+
+Dashboard loads actual backend data.
+
+### TEST B
+
+Suspicious cluster appears.
+
+### TEST C
+
+Graph displays real accounts and shared attributes.
+
+### TEST D
+
+Case file displays real deterministic risk score.
+
+### TEST E
+
+Claude generates the explanation when available.
+
+### TEST F
+
+Claude failure still leaves:
+
+```text
+graph
+score
+evidence
+```
+
+visible.
+
+### TEST G
+
+Legitimate family/office case is not incorrectly escalated because of one shared identifier.
+
+### TEST H
+
+Click:
+
+```text
+HOLD PAYOUT
+```
+
+and verify actual audit entry.
+
+### TEST I
+
+Metrics display actual:
+
+```text
+precision
+recall
+₹ prevented
+false-positive cost
+```
+
+for:
+
+```text
+baseline
+Ring Sentinel
+```
+
+### TEST J
+
+LIVE/OFFLINE state reflects actual connectivity.
+
+---
+
+# 40. FINAL ACCEPTANCE CHECKLIST
+
+Do not finish until all are TRUE:
+
+```text
+[ ] Existing frontend preserved
+[ ] Existing UI not redesigned
+[ ] No duplicate frontend
+[ ] No unnecessary architecture changes
+
+[ ] Real synthetic dataset
+[ ] 500 accounts
+[ ] 2000 orders
+[ ] 6–8 seeded rings
+[ ] Legitimate family/office traps
+[ ] 20% holdout
+
+[ ] NetworkX graph
+[ ] Shared device evidence
+[ ] Shared IP evidence
+[ ] Shared address evidence
+[ ] Shared card evidence
+[ ] Shared UPI evidence
+[ ] Shared phone evidence
+
+[ ] Deterministic risk score
+[ ] Velocity signal
+[ ] Promo/refund signal
+[ ] Explainable evidence
+[ ] Legitimate shared infrastructure protected
+
+[ ] Claude only in llm/narrator.py
+[ ] Claude does not calculate risk
+[ ] Claude does not decide action
+[ ] No recommended_action from Claude
+[ ] Pydantic action enum enforced
+
+[ ] WATCH allowed
+[ ] HOLD_PAYOUT allowed
+[ ] ESCALATE_HUMAN allowed
+[ ] BLOCK rejected
+[ ] No auto-block path
+
+[ ] FastAPI works
+[ ] Existing frontend connected to backend
+[ ] Real graph data
+[ ] Real case data
+[ ] Real metrics data
+
+[ ] Holdout precision
+[ ] Holdout recall
+[ ] Actual ₹ prevented
+[ ] Actual FP cost
+[ ] Baseline comparison visible
+
+[ ] Claude failure graceful
+[ ] Graph survives Claude failure
+[ ] Risk score survives Claude failure
+
+[ ] Hash-chained audit
+[ ] Human action recorded
+[ ] Audit verification works
+
+[ ] Honest LIVE/OFFLINE status
+[ ] Dataset replay labeled honestly if applicable
+
+[ ] Tests pass
+[ ] README accurate
+[ ] Demo script accurate
+[ ] Pitch deck accurate
+```
+
+---
+
+# 41. FINAL COMMANDMENT
+
+### DO NOT REBUILD.
+
+### DO NOT REDESIGN.
+
+### DO NOT ADD SCOPE.
+
+### DO NOT FAKE ANYTHING.
+
+### DO NOT HARDCODE METRICS.
+
+### DO NOT LET CLAUDE DECIDE.
+
+### DO NOT AUTO-BLOCK.
+
+### DO NOT CLAIM REAL-TIME IF IT IS DATASET REPLAY.
+
+### DO NOT CLAIM PRODUCTION ₹ SAVINGS.
+
+### DO NOT USE HOLDOUT DATA FOR TUNING.
+
+Instead:
+
+> **Preserve the existing Ring Sentinel project, fix every remaining contradiction, connect the existing UI to the actual backend, expose the real evaluation results, preserve graph evidence, enforce the human gate, and verify the complete system end-to-end.**
+
+When all acceptance criteria pass, stop.
+
+Do not continue adding features.

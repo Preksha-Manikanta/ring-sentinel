@@ -3,6 +3,8 @@
 Network-level payment-abuse detection and investigation. Deterministic detection,
 AI-assisted explanation, and a **mandatory human gate**. Nothing auto-blocks.
 
+**🚀 Live Demo:** https://ring-sentinel-pi.vercel.app
+
 - **Problem** — merchants catch fraud one account at a time; coordinated abuse is a
   *network* of accounts that individually look fine.
 - **Solution** — build a relationship graph over shared identifiers, score candidate
